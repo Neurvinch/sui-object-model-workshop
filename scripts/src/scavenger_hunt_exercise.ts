@@ -38,6 +38,7 @@ const main = async () => {
    *
    * Create a new Transaction instance from the @mysten/sui/transactions module.
    */
+  const tx = new Transaction();
 
   /**
    * Task 2:
@@ -45,18 +46,31 @@ const main = async () => {
    * Create a new key using the `key::new` function.
    */
 
+  const [newKey] = tx.moveCall({
+    target: `${PACKAGE_ID}::key::new`,
+  });
+
   /**
    * Task 3:
    *
    * Set the key code correctly using the `key::set_code` function.
    */
 
+  tx.moveCall({
+    target: `${PACKAGE_ID}::key::set_code`,
+    arguments: [newKey, tx.pure.string("hey-i-am-suii-man")],
+  });
+
   /**
    * Task 4:
    *
    * Use the key to withdraw the `SUI` coin from the vault using the `vault::withdraw` function.
    */
-  
+
+  const [withdrawCoin] = tx.moveCall({
+    target: `${PACKAGE_ID}::vault::withdraw`,
+    arguments: [tx.object(VAULT_ID), newKey],
+  });
 
   /**
    * Task 5:
@@ -64,6 +78,10 @@ const main = async () => {
    * Transfer the `SUI` coin to your account.
    */
 
+  tx.transferObjects(
+    [withdrawCoin],
+    tx.pure.address(keypair.getPublicKey().toSuiAddress())
+  );
 
   /**
    * Task 6:
@@ -76,12 +94,19 @@ const main = async () => {
    * - Observing transaction results: https://sdk.mystenlabs.com/typescript/transaction-building/basics#observing-the-results-of-a-transaction
    */
 
+  const result = await suiClient.signAndExecuteTransaction({
+    signer: keypair,
+    transaction: tx,
+    requestType: "WaitForLocalExecution",
+  });
+
+  console.log("Transaction Result:", result);
 
   /**
    * Task 7: Run the script with the command below and ensure it works!
-   * 
+   *
    * pnpm scavenger-hunt
-   * 
+   *
    * Verify the transaction on the Sui Explorer: https://suiscan.xyz/testnet/home
    */
 };

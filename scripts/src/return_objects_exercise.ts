@@ -39,44 +39,60 @@ const main = async () => {
    *
    * Create a new Transaction instance from the @mysten/sui/transactions module.
    */
+  try {
+    const tx = new Transaction();
 
-  /**
-   * Task 2:
-   *
-   * Execute the call to the `sui_nft::new` function to the transaction instance.
-   *
-   * The target should be in the format {package address}::{module name}::{function name}. The
-   * package address is provided above. The module name is `sui_nft` and the function name is `new`.
-   *
-   * HINT: The arguments and typeArguments arguments are optional since this function does not take
-   * any arguments or type arguments.
-   */
+    /**
+     * Task 2:
+     *
+     * Execute the call to the `sui_nft::new` function to the transaction instance.
+     *
+     * The target should be in the format {package address}::{module name}::{function name}. The
+     * package address is provided above. The module name is `sui_nft` and the function name is `new`.
+     *
+     * HINT: The arguments and typeArguments arguments are optional since this function does not take
+     * any arguments or type arguments.
+     */
 
-  /**
-   * Task 3:
-   *
-   * Transfer the newly created SuiNFT object to your address.
-   *
-   * Use `tx.transferObjects(objects, address)` - Transfers a list of objects to the specified address.
-   *
-   * HINT: Use `suiAddress`` to transfer the object to your address.
-   */
+    const [createdNft] = tx.moveCall({
+      target: `${PACKAGE_ID}::sui_nft::new`,
+    });
 
+    /**
+     * Task 3:
+     *
+     * Transfer the newly created SuiNFT object to your address.
+     *
+     * Use `tx.transferObjects(objects, address)` - Transfers a list of objects to the specified address.
+     *
+     * HINT: Use `suiAddress`` to transfer the object to your address.
+     */
 
-  /**
-   * Task 4:
-   *
-   * Sign and execute the transaction using the SuiClient instance created above.
-   *
-   * Print the result to the console.
-   */
+    tx.transferObjects([createdNft], suiAddress);
 
+    /**
+     * Task 4:
+     *
+     * Sign and execute the transaction using the SuiClient instance created above.
+     *
+     * Print the result to the console.
+     */
+
+    const result = await suiClient.signAmdExecuteTransaction({
+      signer: keypair,
+      transaction: tx,
+    });
+
+    console.log("Transction executed. Result:", result);
+  } catch (error) {
+    console.error("Error executing transaction:", error);
+  }
 
   /**
    * Task 5: Run the script with the command below and ensure it works!
-   * 
+   *
    * pnpm return-objects
-   * 
+   *
    * Verify the transaction on the Sui Explorer: https://suiscan.xyz/testnet/home
    */
 };
